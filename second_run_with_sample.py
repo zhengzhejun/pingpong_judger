@@ -7,6 +7,7 @@ import os
 import time
 from datetime import datetime
 from ultralytics import YOLO
+from imutils.video import FPS
 
 model = YOLO('yolov8n.pt')
 
@@ -53,6 +54,7 @@ def test_ip_camera_fps():
 
     start = time.time()
     frame_cnt = 0
+    fps = FPS().start()
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -61,6 +63,16 @@ def test_ip_camera_fps():
         if frame_cnt % 500 == 0:
             end = time.time()
             print("fps is ", frame_cnt / (end - start))
+        fps.update()
+        fps.stop()
+        text = "{}: {}".format("fsp", "{:.2f}".format(fps.fps()))
+        cv.putText(frame, text, (50, 50), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv.imshow("Frame", frame)
+        if cv.waitKey(1) == 'q':
+            break
+    cap.release()
+    cv.destroyAllWindows()
+
 
 def sample_20_test_predict(is_cuda = False):
     # 采样20的情况下，测试模型处理一个frame的耗时
@@ -100,6 +112,6 @@ def sample_20_test_predict_with_cuda():
 
 if __name__ == "__main__":
     # sample_20()
-    # test_ip_camera_fps()
-    sample_20_test_predict()
+    test_ip_camera_fps()
+    # sample_20_test_predict()
     # sample_20_test_predict_with_cuda()
